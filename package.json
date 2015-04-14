@@ -4,6 +4,7 @@
   "main": "run-tests.js",
   "dependencies": {
     "ldf-client": "~1.2.5",
+    "ldf-client-amq": "git+ssh://git.mmlab.be:linked-data-fragments/client.git#amq",
     "line-by-line": "~0.1.3"
   },
   "devDependencies": {},
