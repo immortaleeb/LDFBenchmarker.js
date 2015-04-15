@@ -12,25 +12,18 @@ if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
 }
 
 var file = args[0],
-    startFragment = args[1],
-    timeOut = args[2] || 60000, // default 60s
-    ldf = require(args[3] || 'ldf-client');
+  startFragment = args[1],
+  timeOut = args[2] || 60000, // default 60s
+  ldf = require(args[3] || 'ldf-client');
 
-ldf.Logger.setLevel('warning');
-
-var fragmentsClient = new ldf.FragmentsClient(startFragment);
-
-var requestCount = 0;
-fragmentsClient._httpClient._logger.info = function () {
-  requestCount++;
-}
+ldf.Logger.setLevel('info');
 
 var lr = new LineByLineReader(file);
 
-var id = 0, isTimeOut = false;
+var id = 0;
 
 
-console.log("file,id,query,timeFirst,time,resultCount,requestCount,timeOut");
+console.log("file,id,timeFirst,time,resultCount,requestCount,timeOut");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -42,12 +35,22 @@ lr.on('line', function (query) {
   lr.pause();
 
   id++;
+  requestCount = 0;
 
-  var start = process.hrtime(),
-    timeFirst = null,
+  // Measurements
+  var timeFirst = null,
     time = null,
     resultCount = 0,
-    timeOut = false;
+    requestCount = 0,
+    isTimeOut = false;
+
+  var fragmentsClient = new ldf.FragmentsClient(startFragment);
+
+  fragmentsClient._httpClient._logger.info = function () {
+    requestCount++;
+  };
+
+  var start = process.hrtime();
 
   var results = new ldf.SparqlIterator(query, {
     fragmentsClient: fragmentsClient
@@ -56,7 +59,7 @@ lr.on('line', function (query) {
   setTimeout(function () {
     isTimeOut = true;
     results._end();
-  }, timeOut)
+  }, timeOut);
 
   results.on('data', function (result) {
     if (timeFirst === null)
@@ -67,7 +70,7 @@ lr.on('line', function (query) {
   results.on('end', function (end) {
     var time = process.hrtime(start);
 
-    console.log("%s,%d,%s,%d,%d,%d,%d,%s", file, id, query, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
+    console.log("%s,%d,%d,%d,%d,%d,%s", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
 
     lr.resume();
   });
