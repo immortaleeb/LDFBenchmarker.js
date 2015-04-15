@@ -2,6 +2,7 @@
 npm install
 mkdir output
 
+#while :; do top -p $(pgrep -d',' http) -n 1 >> log.txt; date >> log.txt; sleep 1; done
 
 timeout=60000
 

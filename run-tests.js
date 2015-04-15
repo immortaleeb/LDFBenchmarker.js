@@ -27,7 +27,7 @@ fragmentsClient._httpClient._logger.info = function () {
 
 var lr = new LineByLineReader(file);
 
-var id = 0;
+var id = 0, isTimeOut = false;
 
 
 console.log("file,id,query,timeFirst,time,resultCount,requestCount,timeOut");
@@ -54,9 +54,9 @@ lr.on('line', function (query) {
   });
 
   setTimeout(function () {
-    timeOut = true;
+    isTimeOut = true;
     results._end();
-  }, 5000)
+  }, timeOut)
 
   results.on('data', function (result) {
     if (timeFirst === null)
@@ -67,7 +67,7 @@ lr.on('line', function (query) {
   results.on('end', function (end) {
     var time = process.hrtime(start);
 
-    console.log("%s,%d,%s,%d,%d,%d,%d,%s", file, id, query, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, timeOut);
+    console.log("%s,%d,%s,%d,%d,%d,%d,%s", file, id, query, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
 
     lr.resume();
   });
