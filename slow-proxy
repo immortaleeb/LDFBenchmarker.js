@@ -1,4 +1,9 @@
+#!/usr/bin/env node
 var args = process.argv.slice(2);
+if (args.length < 1 || args.length > 3 || /^--?h(elp)?$/.test(args[0])) {
+  console.log('usage: ./slow-proxy targetPort proxyPort delay');
+  return process.exit(1);
+}
 
 var http = require('http'),
   httpProxy = require('http-proxy');
@@ -15,5 +20,5 @@ http.createServer(function (req, res) {
     proxy.web(req, res);
   }, args[2]);
 }).listen(args[1], function () {
-  console.log('proxy listening on port %d', args[1]);
+  console.log('proxy %d listening on port %d', process.pid, args[1]);
 });

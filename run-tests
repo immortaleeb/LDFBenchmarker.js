@@ -4,7 +4,7 @@
 
 var fs = require('fs'),
   LineByLineReader = require('line-by-line'),
-  trackPID = require('./monitor_mod');
+  ldf = require('ldf-client');
 
 var args = process.argv.slice(2);
 if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
@@ -15,7 +15,8 @@ if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
 var file = args[0],
   startFragment = args[1],
   timeOut = args[2] || 60000, // default 60s
-  ldf = require(args[3] || 'ldf-client');
+  optimized = args[3] && args[3] === 'optimized';
+
 
 ldf.Logger.setLevel('info');
 
@@ -24,7 +25,7 @@ var lr = new LineByLineReader(file);
 var id = 0;
 
 
-console.log("file,id,timeFirst(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(B)");
+console.log("file,id,timeFirst(ms),time(ms),resultCount,requestCount,timeOut");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -43,10 +44,7 @@ lr.on('line', function (query) {
     time = null,
     resultCount = 0,
     requestCount = 0,
-    isTimeOut = false,
-    cpu = 0,
-    memory = 0,
-    steps = 0;
+    isTimeOut = false;
 
   var fragmentsClient = new ldf.FragmentsClient(startFragment);
 
@@ -54,19 +52,13 @@ lr.on('line', function (query) {
     requestCount++;
   };
 
-  var tracker = new trackPID(process.pid, 1000, function (result) {
-    cpu += result.cpu;
-    memory += result.memory;
-    steps++;
-  });
-
   var start = process.hrtime();
 
   var results = new ldf.SparqlIterator(query, {
     fragmentsClient: fragmentsClient
   });
 
-  setTimeout(function () {
+  var to = setTimeout(function () {
     isTimeOut = true;
     results._end();
   }, timeOut);
@@ -79,10 +71,16 @@ lr.on('line', function (query) {
   });
   results.on('end', function (end) {
     var time = process.hrtime(start);
-    tracker.stop();
-    console.log("%s,%d,%d,%d,%d,%d,%s,%d,%d", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut, cpu/steps, memory/steps);
+    clearTimeout(to);
+    console.log("%s,%d,%d,%d,%d,%d,%s", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
 
     lr.resume();
+  });
+
+  // Report an error's stack trace
+  results.on('error', function (error) {
+    console.error('ERROR: An error occurred during query execution.\n');
+    console.error(error.stack);
   });
 });
 

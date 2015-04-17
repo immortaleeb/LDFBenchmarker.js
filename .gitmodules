@@ -1,0 +1,3 @@
+[submodule "clients/ldf-client"]
+	path = clients/ldf-client
+	url = git@git.mmlab.be:linked-data-fragments/client.git
