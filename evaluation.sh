@@ -8,6 +8,9 @@ timeout=60000
 
 #node slow-proxy.js 3000 3001 100
 
+#Start monitoring servers
+./monitor 
+
 function run {
   echo "--- Run $1 ---"
   ./run-tests.js ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:3000/watdiv100M $timeout ldf-client > ./output/$1.csv

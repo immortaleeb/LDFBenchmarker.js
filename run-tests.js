@@ -3,7 +3,8 @@
 /* Simple benchmarking application for testing different TPF clients */
 
 var fs = require('fs'),
-  LineByLineReader = require('line-by-line');
+  LineByLineReader = require('line-by-line'),
+  trackPID = require('./monitor_mod');
 
 var args = process.argv.slice(2);
 if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
@@ -23,7 +24,7 @@ var lr = new LineByLineReader(file);
 var id = 0;
 
 
-console.log("file,id,timeFirst,time,resultCount,requestCount,timeOut");
+console.log("file,id,timeFirst (ms),time (ms),resultCount,requestCount,timeOut, cpu (%), memory (B)");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -42,13 +43,22 @@ lr.on('line', function (query) {
     time = null,
     resultCount = 0,
     requestCount = 0,
-    isTimeOut = false;
+    isTimeOut = false,
+    cpu = 0,
+    memory = 0,
+    steps = 0;
 
   var fragmentsClient = new ldf.FragmentsClient(startFragment);
 
-  fragmentsClient._httpClient._logger.info = function () {
+  fragmentsClient._httpClient._logger.info = function (item) {
     requestCount++;
   };
+
+  trackPID(process.pid, 1000, function (result) {
+    cpu += result.cpu;
+    memory += result.memory;
+    steps++;
+  });
 
   var start = process.hrtime();
 
@@ -70,7 +80,7 @@ lr.on('line', function (query) {
   results.on('end', function (end) {
     var time = process.hrtime(start);
 
-    console.log("%s,%d,%d,%d,%d,%d,%s", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
+    console.log("%s,%d,%d,%d,%d,%d,%s,%d,%d", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut, cpu/steps, memory/steps);
 
     lr.resume();
   });
@@ -79,4 +89,5 @@ lr.on('line', function (query) {
 lr.on('end', function () {
   // All lines are read, file is closed now.
   console.error('--- End of run ---');
+  process.exit(0);
 });
