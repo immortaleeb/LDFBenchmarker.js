@@ -24,7 +24,7 @@ var lr = new LineByLineReader(file);
 var id = 0;
 
 
-console.log("file,id,timeFirst (ms),time (ms),resultCount,requestCount,timeOut, cpu (%), memory (B)");
+console.log("file,id,timeFirst(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(B)");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -54,7 +54,7 @@ lr.on('line', function (query) {
     requestCount++;
   };
 
-  trackPID(process.pid, 1000, function (result) {
+  var tracker = new trackPID(process.pid, 1000, function (result) {
     cpu += result.cpu;
     memory += result.memory;
     steps++;
@@ -79,7 +79,7 @@ lr.on('line', function (query) {
   });
   results.on('end', function (end) {
     var time = process.hrtime(start);
-
+    tracker.stop();
     console.log("%s,%d,%d,%d,%d,%d,%s,%d,%d", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut, cpu/steps, memory/steps);
 
     lr.resume();
