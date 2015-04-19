@@ -1,15 +1,5 @@
-# Install npm packages
-npm install
-#npm install forever -g
 
-mkdir output
-
-# Prepare client
-git submodule init
-git submodule update
-#npm link clients/ldf-client
-ln -s ../clients/ldf-client/ ./node_modules/ldf-client
-
+#!/bin/bash
 # Set configuration
 timeout=90000
 dataset=watdiv100M
