@@ -1,6 +1,6 @@
-
+# Install npm packages
 npm install
-npm install forever -g
+#npm install forever -g
 
 mkdir output
 
@@ -15,27 +15,27 @@ timeout=90000
 dataset=watdiv100M
 
 port_original=3000
-pid_original=2096
+pid_original=8721
 
 port_original_delayed=3001
-pid_original_delayed=3025
+pid_original_delayed=12337
 
 port_amq=3002
-pid_amq=2117
+pid_amq=11203
 
 port_amq_delayed=3003
-pid_amq_delayed=3050
+pid_amq_delayed=12454
 
 port_gcs=3004
-pid_gcs=2117
+pid_gcs=11346
 
 port_gcs_delayed=3005
-pid_gcs_delayed=3050
+pid_gcs_delayed=12603
 
 #Start monitoring servers
 ./monitor $pid_original > ./output/server_$port_original.csv &
 ./monitor $pid_amq > ./output/server_$port_amq.csv &
-./monitor $pid_gcs > ./output/server_$port_amq.csv &
+./monitor $pid_gcs > ./output/server_$port_gcs.csv &
 
 function run {
   echo "--- Run $1 ---"
@@ -68,4 +68,4 @@ run "test.1"
 #run "test.4"
 #run "test.5"
 
-forever stopall
+#forever stopall
