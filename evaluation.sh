@@ -1,5 +1,7 @@
 
 #!/bin/bash
+
+mkdir output
 # Set configuration
 timeout=90000
 dataset=watdiv100M
