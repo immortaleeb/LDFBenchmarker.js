@@ -1,57 +1,46 @@
-
 #!/bin/bash
 
-mkdir output
+timestamp =
+
+# configure dir
+current_time=$(date "+%Y.%m.%d-%H.%M.%S")
+output_dir="output_$current_time"
+mkdir $output_dir
 
 # Set configuration
 timeout=120000
 dataset=watdiv100M
 
-port_original=3000
+host_original=monn-ldf.linkeddatafragments.org
 pid_original=8721
 
-port_original_delayed=3001
-pid_original_delayed=12337
-
-port_amq=3002
+host_amq=monn-ldf-bloom.linkeddatafragments.org
 pid_amq=11203
 
-port_amq_delayed=3003
-pid_amq_delayed=12454
-
-port_gcs=3004
+host_gcs=monn-ldf-gcs.linkeddatafragments.org
 pid_gcs=11346
 
-port_gcs_delayed=3005
-pid_gcs_delayed=12603
-
 #Start monitoring servers
-./monitor $pid_original > ./output/server_$port_original.csv &
-./monitor $pid_amq > ./output/server_$port_amq.csv &
-./monitor $pid_gcs > ./output/server_$port_gcs.csv &
+./monitor $pid_original > ./$output_dir/.csv &
+./monitor $pid_amq > ./$output_dir/server_$port_amq.csv &
+./monitor $pid_gcs > ./$output_dir/server_$port_gcs.csv &
 
 function run {
   echo "--- Run $1 ---"
   # Original setup
-  cd clients/ldf-client; git checkout master; npm install --production; cd ../..
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_original/$dataset $timeout > ./output/$1.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_original_delayed/$dataset $timeout ldf-client > ./output/$1-delayed.csv
+  cd clients/ldf-client; git checkout feature-statswriter; npm install --production; cd ../..
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_original/$dataset $timeout > ./$output_dir/$1.csv
   # AMQ setup
   cd clients/ldf-client; git checkout amq; npm install --production; cd ../..
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_amq/$dataset $timeout > ./output/$1-amq.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_amq_delayed/$dataset $timeout > ./output/$1-amq-delayed.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_gcs/$dataset $timeout > ./output/$1-gcs.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_gcs_delayed/$dataset $timeout > ./output/$1-gcs-delayed.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout > ./$output_dir/$1-amq.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout > ./$output_dir/$1-gcs.csv
   # optimized setup
   cd clients/ldf-client; git checkout query-optimization; npm install --production; cd ../..
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_original/$dataset $timeout optimized > ./output/$1-optimized.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_original_delayed/$dataset $timeout optimized > ./output/$1-optimized-delayed.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_original/$dataset $timeout optimized > ./$output_dir/$1-optimized.csv
   # combined setup
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_amq/$dataset $timeout > ./output/$1-optimized-amq.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_amq_delayed/$dataset $timeout > ./output/$1-optimized-amq-delayed.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_gcs/$dataset $timeout > ./output/$1-optimized-gcs.csv
-  ./run-tests ./stress-workloads/watdiv-stress-100/$1.sparql http://localhost:$port_gcs_delayed/$dataset $timeout > ./output/$1-optimized-gcs-delayed.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout > ./$output_dir/$1-optimized-amq.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout > ./$output_dir/$1-optimized-gcs.csv
 }
 
 #run "warmup"
