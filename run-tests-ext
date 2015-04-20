@@ -25,7 +25,7 @@ var lr = new LineByLineReader(file);
 var id = 0;
 
 
-console.log("file,id,timeFirst(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(B)");
+console.log("file,id,timeFirst(ms),timeHalf(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(MB)");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -40,9 +40,8 @@ lr.on('line', function (query) {
   requestCount = 0;
 
   // Measurements
-  var timeFirst = null,
-    time = null,
-    resultCount = 0,
+  var delays = [],
+    totalDelay = timeOut,
     requestCount = 0,
     isTimeOut = false,
     cpu = 0,
@@ -51,12 +50,18 @@ lr.on('line', function (query) {
 
   var start = process.hrtime();
 
-  var client = spawn(node,[clientPath, startFragment, query, '-l', 'INFO'], ioSettings);
+  var client = spawn(node,[clientPath, startFragment, query, '-t', 'debug', '-l', 'INFO'], ioSettings);
+  var tracker = new trackPID(client.pid, 200, function (result) {
+    cpu += result.cpu;
+    memory += result.memory / 1000000;
+    steps++;
+  });
+
   client.stdout.setEncoding('utf8');
   // Log HTTP requests
   client.stderr.on('data', function () {
     requestCount++;
-  })
+  });
 
   var to = setTimeout(function () {
     isTimeOut = true;
@@ -64,33 +69,32 @@ lr.on('line', function (query) {
   }, timeOut);
 
   client.stdout.on('data', function (result) {
-    try {
-      JSON.parse(result);
-      if (timeFirst === null)
-        timeFirst = process.hrtime(start);
-
-      resultCount++;
-
-    } catch (err) {
-      console.error(result, err);
-    }
-  });
-
-  var tracker = new trackPID(client.pid, 1000, function (result) {
-    cpu += result.cpu;
-    memory += result.memory;
-    steps++;
+    var parsed = result.split(',');
+    if (parsed[0] === 'TOTAL')
+      totalDelay = parseFloat(parsed[1]);
+    else
+      delays.push(parseFloat(parsed[1]));
   });
 
   client.on('exit', function (code, signal) {
     tracker.stop();
+    clearTimeout(to);
     if (code !== null) {
-      var time = process.hrtime(start);
-      clearTimeout(to);
-      console.log("%s,%d,%d,%d,%d,%d,%s,%d,%d", file, id, timeFirst ? timeFirst[0] * 1000 + (timeFirst[1] / 1000000) : -1, time[0] * 1000 + (time[1] / 1000000), resultCount, requestCount, isTimeOut);
+      console.log('%s,%d,%d,%d,%d,%d,%d,%s,%d,%d',
+      file,
+      id,
+      delays.length > 0 ? delays[0] : -1,
+      delays.length > 0 ? delays[Math.ceil((delays.length - 1) / 2)] : -1,
+      totalDelay,
+      delays.length,
+      requestCount,
+      isTimeOut,
+      cpu / steps,
+      memory / steps);
+
       lr.resume();
     } else {
-      console.error(code, signal);
+      console.error('Error occurred: %s - %s', code, signal);
     }
   });
 });

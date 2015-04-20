@@ -2,8 +2,9 @@
 #!/bin/bash
 
 mkdir output
+
 # Set configuration
-timeout=90000
+timeout=120000
 dataset=watdiv100M
 
 port_original=3000
