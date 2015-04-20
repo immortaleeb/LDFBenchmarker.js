@@ -1,7 +1,5 @@
 #!/bin/bash
 
-timestamp =
-
 # configure dir
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
 output_dir="output_$current_time"
@@ -21,9 +19,9 @@ host_gcs=monn-ldf-gcs.linkeddatafragments.org
 pid_gcs=11346
 
 #Start monitoring servers
-./monitor $pid_original > ./$output_dir/.csv &
-./monitor $pid_amq > ./$output_dir/server_$port_amq.csv &
-./monitor $pid_gcs > ./$output_dir/server_$port_gcs.csv &
+#./monitor $pid_original > ./$output_dir/$host_original.csv &
+#./monitor $pid_amq > ./$output_dir/$host_amq.csv &
+#./monitor $pid_gcs > ./$output_dir/$host_gcs.csv &
 
 function run {
   echo "--- Run $1 ---"
