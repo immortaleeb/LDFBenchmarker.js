@@ -39,8 +39,8 @@ function run {
   ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_original/$dataset $timeout optimized > ./$output_dir/$1-optimized.csv
   # combined setup
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
-  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout > ./$output_dir/$1-optimized-amq.csv
-  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout > ./$output_dir/$1-optimized-gcs.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout optimized > ./$output_dir/$1-optimized-amq.csv
+  ./run-rests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout optimized > ./$output_dir/$1-optimized-gcs.csv
 }
 
 #run "warmup"
