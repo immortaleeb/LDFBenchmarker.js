@@ -10,42 +10,34 @@ timeout=120000
 dataset=watdiv100M
 
 host_original=monn-ldf.linkeddatafragments.org
-pid_original=8721
-
 host_amq=monn-ldf-bloom.linkeddatafragments.org
-pid_amq=11203
-
 host_gcs=monn-ldf-gcs.linkeddatafragments.org
-pid_gcs=11346
-
-#Start monitoring servers
-#./monitor $pid_original > ./$output_dir/$host_original.csv &
-#./monitor $pid_amq > ./$output_dir/$host_amq.csv &
-#./monitor $pid_gcs > ./$output_dir/$host_gcs.csv &
 
 function run {
-  echo "--- Run $1 ---"
+  file=$1
+  filename="${file##*/}"
+
+  echo "--- Run $filename ---"
   # Original setup
   cd clients/ldf-client; git checkout feature-statswriter; npm install --production; cd ../..
-  ./run-tests-ext $1 http://$host_original/$dataset $timeout > ./$output_dir/$1.csv
+  ./run-tests-ext $file http://$host_original/$dataset $timeout > ./$output_dir/$filename.csv
   # AMQ setup
   cd clients/ldf-client; git checkout amq; npm install --production; cd ../..
-  ./run-tests-ext $1 http://$host_amq/$dataset $timeout > ./$output_dir/$1-amq.csv
-  ./run-tests-ext $1 http://$host_gcs/$dataset $timeout > ./$output_dir/$1-gcs.csv
+  ./run-tests-ext $file http://$host_amq/$dataset $timeout > ./$output_dir/$filename-amq.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset $timeout > ./$output_dir/$filename-gcs.csv
   # optimized setup
   cd clients/ldf-client; git checkout query-optimization; npm install --production; cd ../..
-  ./run-tests-ext $1 http://$host_original/$dataset $timeout optimized > ./$output_dir/$1-optimized.csv
+  ./run-tests-ext $file http://$host_original/$dataset $timeout optimized > ./$output_dir/$filename-optimized.csv
   # combined setup
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
-  ./run-tests-ext $1 http://$host_amq/$dataset $timeout optimized > ./$output_dir/$1-optimized-amq.csv
-  ./run-tests-ext $1 http://$host_gcs/$dataset $timeout optimized > ./$output_dir/$1-optimized-gcs.csv
+  ./run-tests-ext $file http://$host_amq/$dataset $timeout optimized > ./$output_dir/$filename-optimized.amq.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset $timeout optimized > ./$output_dir/$filename-optimized-gcs.csv
 }
 
+run "./stress-workloads/amq-test.sparql"
 #run "warmup"
-run "./stress-workloads/watdiv-stress-100/test.1.sparql"
+#run "./stress-workloads/watdiv-stress-100/test.1.sparql"
 #run "test.2"
 #run "test.3"
 #run "test.4"
 #run "test.5"
-
-#forever stopall
