@@ -27,22 +27,22 @@ function run {
   echo "--- Run $1 ---"
   # Original setup
   cd clients/ldf-client; git checkout feature-statswriter; npm install --production; cd ../..
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_original/$dataset $timeout > ./$output_dir/$1.csv
+  ./run-tests-ext $1 http://$host_original/$dataset $timeout > ./$output_dir/$1.csv
   # AMQ setup
   cd clients/ldf-client; git checkout amq; npm install --production; cd ../..
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout > ./$output_dir/$1-amq.csv
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout > ./$output_dir/$1-gcs.csv
+  ./run-tests-ext $1 http://$host_amq/$dataset $timeout > ./$output_dir/$1-amq.csv
+  ./run-tests-ext $1 http://$host_gcs/$dataset $timeout > ./$output_dir/$1-gcs.csv
   # optimized setup
   cd clients/ldf-client; git checkout query-optimization; npm install --production; cd ../..
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_original/$dataset $timeout optimized > ./$output_dir/$1-optimized.csv
+  ./run-tests-ext $1 http://$host_original/$dataset $timeout optimized > ./$output_dir/$1-optimized.csv
   # combined setup
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_amq/$dataset $timeout optimized > ./$output_dir/$1-optimized-amq.csv
-  ./run-tests-ext ./stress-workloads/watdiv-stress-100/$1.sparql http://$host_gcs/$dataset $timeout optimized > ./$output_dir/$1-optimized-gcs.csv
+  ./run-tests-ext $1 http://$host_amq/$dataset $timeout optimized > ./$output_dir/$1-optimized-amq.csv
+  ./run-tests-ext $1 http://$host_gcs/$dataset $timeout optimized > ./$output_dir/$1-optimized-gcs.csv
 }
 
 #run "warmup"
-run "test.1"
+run "./stress-workloads/watdiv-stress-100/test.1.sparql"
 #run "test.2"
 #run "test.3"
 #run "test.4"
