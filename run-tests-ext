@@ -83,6 +83,7 @@ lr.on('line', function (query) {
   client.on('exit', function (code, signal) {
     tracker.stop();
     clearTimeout(to);
+    client.removeAllListeners();
     if (code !== null) {
       console.log('%s,%d,%d,%d,%d,%d,%d,%s,%d,%d',
       file,
