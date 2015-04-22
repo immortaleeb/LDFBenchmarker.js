@@ -58,9 +58,13 @@ lr.on('line', function (query) {
   });
 
   client.stdout.setEncoding('utf8');
+  client.stderr.setEncoding('utf8');
   // Log HTTP requests
-  client.stderr.on('data', function () {
-    requestCount++;
+  client.stderr.on('data', function (data) {
+    if (data.indexOf('INFO HttpClient') > -1)
+      requestCount++;
+    else
+      process.stderr.write(data);
   });
 
   var to = setTimeout(function () {
@@ -93,9 +97,8 @@ lr.on('line', function (query) {
       memory / steps);
 
       lr.resume();
-    } else {
-      console.error('Error occurred: %s - %s', code, signal);
-    }
+    } else
+      console.error('ERROR: client exited abnormally: %s', signal);
   });
 });
 
