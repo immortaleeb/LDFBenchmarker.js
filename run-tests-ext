@@ -9,16 +9,21 @@ var fs = require('fs'),
 
 var args = process.argv.slice(2);
 if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
-  console.log('usage: ./run-tests.js queryFile startFragment [timeout [client=ldf-client]]');
+  console.log('usage: ./run-tests.js queryFile startFragment [timeout [optimized]]');
   return process.exit(1);
 }
 
 var file = args[0],
   startFragment = args[1],
   timeOut = args[2] || 60000, // default 60s
+  optimized = (args[3] && args[3] === 'optimized'),
   node = process.argv[0],
   clientPath = './clients/ldf-client/bin/ldf-client',
-  ioSettings = { stdio: ['pipe', 'pipe', 'pipe'] };
+  ioSettings = { stdio: ['pipe', 'pipe', 'pipe'] },
+  parameters = ['-t', 'debug', '-l', 'INFO'];
+
+if (optimized)
+  parameters.push('-a', '2');
 
 var lr = new LineByLineReader(file);
 
@@ -50,7 +55,7 @@ lr.on('line', function (query) {
 
   var start = process.hrtime();
 
-  var client = spawn(node,[clientPath, startFragment, query, '-t', 'debug', '-l', 'INFO'], ioSettings);
+  var client = spawn(node,[clientPath, startFragment, query].concat(parameters), ioSettings);
   var tracker = new trackPID(client.pid, 200, function (result) {
     cpu += result.cpu;
     memory += result.memory / 1000000;
