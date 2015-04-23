@@ -1,6 +1,6 @@
 #!/bin/bash
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-output_dir="/srv/monitor_$current_time"
+output_dir="/srv/evaluation_bloom/monitor_$current_time"
 
 mkdir -p $output_dir
 

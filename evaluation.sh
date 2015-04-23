@@ -2,8 +2,8 @@
 
 # configure dir
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-output_dir="./output_$current_time"
-mkdir $output_dir
+output_dir="/srv/evaluation_bloom/output_$current_time"
+mkdir -p $output_dir
 
 # Set configuration
 timeout=120000
