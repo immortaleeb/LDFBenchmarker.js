@@ -3,7 +3,7 @@
 
     sudo bash monitor_servers [PID1 [PID2 [...]]
 
-  This will create a folder `/srv/evaluation_bloom/monitor_[current_time]` with one logfile per PID, e.g. 1111.csv.
+  This will create a folder `/srv/evaluation_bloom/monitor_[current_time]` with one logfile per PID, e.g. 1111.csv. Remember, when logging an ldf-server, you have to specify the PIDs for all workers, not the master process.
   The interval is default 500ms. Currently, this can be changed by editing the `monitor_servers` script by replacing `./monitor $pid` with `./monitor $pid [delay in ms]`.
 
 
