@@ -100,13 +100,13 @@ lr.on('line', function (query) {
       id,
       delays.length > 0 ? delays[0] : -1,
       delays.length > 0 ? delays[Math.ceil((delays.length - 1) / 2)] : -1,
-      error !== '' ? 'ERROR' : isTimeOut ? timeOut : totalDelay,
+      isTimeOut ? timeOut : totalDelay,
       delays.length,
       requestCount,
-      isTimeOut,
+      error !== '' ? 'ERROR' : isTimeOut,
       cpu / steps,
       memory / steps,
-      '"' + error.replace('"','\\"') + '"');
+      '"' + error.replace(/(\r\n|\n|\r)/gm,"") + '"');
 
     lr.resume();
   });
