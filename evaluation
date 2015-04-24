@@ -32,6 +32,16 @@ function run {
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
   ./run-tests-ext $file http://$host_amq/$dataset $timeout optimized > $output_dir/$filename-optimized.amq.csv
   ./run-tests-ext $file http://$host_gcs/$dataset $timeout optimized > $output_dir/$filename-optimized-gcs.csv
+
+  # Opportunistic AMQ setup
+  cd clients/ldf-client; git checkout amq-opportunistic; npm install --production; cd ../..
+  ./run-tests-ext $file http://$host_amq/$dataset $timeout > $output_dir/$filename-amq-opportunistic.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset $timeout > $output_dir/$filename-gcs-opportunistic.csv
+
+  # Opportunistic combined setup
+  cd clients/ldf-client; git checkout query-optimization-amq-opportunistic; npm install --production; cd ../..
+  ./run-tests-ext $file http://$host_amq/$dataset $timeout optimized > $output_dir/$filename-optimized-amq-opportunistic.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset $timeout optimized > $output_dir/$filename-optimized-gcs-opportunistic.csv
 }
 
 run "./stress-workloads/amq-test.sparql"
