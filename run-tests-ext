@@ -71,7 +71,7 @@ lr.on('line', function (query) {
   client.stderr.on('data', function (data) {
     if (data.indexOf('INFO HttpClient') > -1)
       requestCount++;
-    else if ()
+    else
       error += data;
     process.stderr.write(data);
   });
