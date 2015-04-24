@@ -19,7 +19,9 @@ var file = args[0],
   optimized = (args[3] && args[3] === 'optimized'),
   node = process.argv[0],
   clientPath = './clients/ldf-client/bin/ldf-client',
-  ioSettings = { stdio: ['pipe', 'pipe', 'pipe'] },
+  ioSettings = {
+    stdio: ['pipe', 'pipe', 'pipe']
+  },
   parameters = ['-t', 'debug', '-l', 'INFO'];
 
 if (optimized)
@@ -30,7 +32,7 @@ var lr = new LineByLineReader(file);
 var id = 0;
 
 
-console.log("file,id,timeFirst(ms),timeHalf(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(MB)");
+console.log("id,timeFirst(ms),timeHalf(ms),time(ms),resultCount,requestCount,timeOut,cpu(%),memory(MB),error");
 
 lr.on('error', function (err) {
   // 'err' contains error object
@@ -46,16 +48,17 @@ lr.on('line', function (query) {
 
   // Measurements
   var delays = [],
-    totalDelay = timeOut,
+    totalDelay = -1,
     requestCount = 0,
     isTimeOut = false,
     cpu = 0,
     memory = 0,
-    steps = 0;
+    steps = 0,
+    error = '';
 
   var start = process.hrtime();
 
-  var client = spawn(node,[clientPath, startFragment, query].concat(parameters), ioSettings);
+  var client = spawn(node, [clientPath, startFragment, query].concat(parameters), ioSettings);
   var tracker = new trackPID(client.pid, 200, function (result) {
     cpu += result.cpu;
     memory += result.memory / 1000000;
@@ -68,6 +71,8 @@ lr.on('line', function (query) {
   client.stderr.on('data', function (data) {
     if (data.indexOf('INFO HttpClient') > -1)
       requestCount++;
+    else
+      error += data;
     process.stderr.write(data);
   });
 
@@ -88,22 +93,22 @@ lr.on('line', function (query) {
     tracker.stop();
     clearTimeout(to);
     client.removeAllListeners();
-    if (code !== null) {
-      console.log('%s,%d,%d,%d,%d,%d,%d,%s,%d,%d',
-      file,
+    if (code === null)
+      console.error('ERROR: client exited abnormally: %s', signal);
+
+    console.log('%d,%d,%d,%d,%d,%d,%s,%d,%d,%s',
       id,
       delays.length > 0 ? delays[0] : -1,
       delays.length > 0 ? delays[Math.ceil((delays.length - 1) / 2)] : -1,
-      totalDelay,
+      isTimeOut ? timeOut : totalDelay,
       delays.length,
       requestCount,
       isTimeOut,
       cpu / steps,
-      memory / steps);
+      memory / steps,
+      error);
 
-      lr.resume();
-    } else
-      console.error('ERROR: client exited abnormally: %s', signal);
+    lr.resume();
   });
 });
 
