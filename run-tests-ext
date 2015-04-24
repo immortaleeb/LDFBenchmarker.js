@@ -71,7 +71,7 @@ lr.on('line', function (query) {
   client.stderr.on('data', function (data) {
     if (data.indexOf('INFO HttpClient') > -1)
       requestCount++;
-    else
+    else if ()
       error += data;
     process.stderr.write(data);
   });
@@ -103,7 +103,7 @@ lr.on('line', function (query) {
       isTimeOut ? timeOut : totalDelay,
       delays.length,
       requestCount,
-      error !== '' ? 'ERROR' : isTimeOut,
+      isTimeOut,
       cpu / steps,
       memory / steps,
       '"' + error.replace(/\r?\n|\r/g," ") + '"');
