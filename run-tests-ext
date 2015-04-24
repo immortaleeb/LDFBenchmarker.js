@@ -106,7 +106,7 @@ lr.on('line', function (query) {
       error !== '' ? 'ERROR' : isTimeOut,
       cpu / steps,
       memory / steps,
-      '"' + error.replace(/(\r\n|\n|\r)/gm,"") + '"');
+      '"' + error.replace(/\r?\n|\r/g," ") + '"');
 
     lr.resume();
   });
