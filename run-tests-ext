@@ -5,18 +5,18 @@
 var fs = require('fs'),
   LineByLineReader = require('line-by-line'),
   spawn = require('child_process').spawn,
-  trackPID = require('./lib/monitor_mod');
+  trackPID = require('./lib/monitor_mod'),
+  args = require('minimist')(process.argv.slice(2));
 
-var args = process.argv.slice(2);
-if (args.length < 2 || args.length > 4 || /^--?h(elp)?$/.test(args[0])) {
-  console.log('usage: ./run-tests.js queryFile startFragment [timeout [optimized]]');
+if (args._.length < 2 || /^--?h(elp)?$/.test(args[0])) {
+  console.log('usage: ./run-tests.js queryFile fragment [[fragment]...] [-to timeout] [-optimized]');
   return process.exit(1);
 }
 
-var file = args[0],
-  startFragment = args[1],
-  timeOut = args[2] || 60000, // default 60s
-  optimized = (args[3] && args[3] === 'optimized'),
+var file = args._[0],
+  startFragments = args._.slice(1),
+  timeOut = args.to || 60000, // default 60s
+  optimized = !!args.optimized,
   node = process.argv[0],
   clientPath = './clients/ldf-client/bin/ldf-client',
   ioSettings = {
@@ -24,6 +24,7 @@ var file = args[0],
   },
   parameters = ['-t', 'debug', '-l', 'INFO'];
 
+/* TODO: Remove hacks like this after client has been cleaned up */
 if (optimized)
   parameters.push('-a', '2');
 
@@ -58,7 +59,7 @@ lr.on('line', function (query) {
 
   var start = process.hrtime();
 
-  var client = spawn(node, [clientPath, startFragment, query].concat(parameters), ioSettings);
+  var client = spawn(node, [clientPath].concat(startFragments, query, parameters), ioSettings);
   var tracker = new trackPID(client.pid, 200, function (result) {
     cpu += result.cpu;
     memory += result.memory / 1000000;
@@ -85,7 +86,7 @@ lr.on('line', function (query) {
     var parsed = result.split(',');
     if (parsed[0] === 'TOTAL')
       totalDelay = parseFloat(parsed[1]);
-    else
+    else if (parsed[0] !== 'Result') // Skip header row
       delays.push(parseFloat(parsed[1]));
   });
 

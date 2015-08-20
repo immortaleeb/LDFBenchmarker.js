@@ -5,7 +5,8 @@
   "dependencies": {
     "line-by-line": "~0.1.3",
     "usage": "0.6.0",
-    "http-proxy": "1.10.1"
+    "http-proxy": "1.10.1",
+    "minimist": "~1.1.0"
   },
   "devDependencies": {},
   "scripts": {
