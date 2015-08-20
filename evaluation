@@ -20,28 +20,28 @@ function run {
   echo "--- Run $filename ---"
   # Original setup
   cd clients/ldf-client; git checkout feature-statswriter; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_original/$dataset -to $timeout > $output_dir/$filename.csv
+  ./run-tests-ext $file http://$host_original/$dataset -t $timeout > $output_dir/$filename.csv
   # AMQ setup
   cd clients/ldf-client; git checkout amq; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_amq/$dataset -to $timeout > $output_dir/$filename-amq.csv
-  ./run-tests-ext $file http://$host_gcs/$dataset -to $timeout > $output_dir/$filename-gcs.csv
+  ./run-tests-ext $file http://$host_amq/$dataset -t $timeout > $output_dir/$filename-amq.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset -t $timeout > $output_dir/$filename-gcs.csv
   # optimized setup
   cd clients/ldf-client; git checkout query-optimization; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_original/$dataset -to $timeout -optimized > $output_dir/$filename-optimized.csv
+  ./run-tests-ext $file http://$host_original/$dataset -t $timeout --optimized > $output_dir/$filename-optimized.csv
   # combined setup
   cd clients/ldf-client; git checkout query-optimization-amq; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_amq/$dataset -to $timeout -optimized > $output_dir/$filename-optimized.amq.csv
-  ./run-tests-ext $file http://$host_gcs/$dataset -to $timeout -optimized > $output_dir/$filename-optimized-gcs.csv
+  ./run-tests-ext $file http://$host_amq/$dataset -t $timeout --optimized > $output_dir/$filename-optimized.amq.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset -t $timeout --optimized > $output_dir/$filename-optimized-gcs.csv
 
   # Opportunistic AMQ setup
   cd clients/ldf-client; git checkout amq-opportunistic; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_amq/$dataset -to $timeout > $output_dir/$filename-amq-opportunistic.csv
-  ./run-tests-ext $file http://$host_gcs/$dataset -to $timeout > $output_dir/$filename-gcs-opportunistic.csv
+  ./run-tests-ext $file http://$host_amq/$dataset -t $timeout > $output_dir/$filename-amq-opportunistic.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset -t $timeout > $output_dir/$filename-gcs-opportunistic.csv
 
   # Opportunistic combined setup
   cd clients/ldf-client; git checkout query-optimization-amq-opportunistic; npm install --production; cd ../..
-  ./run-tests-ext $file http://$host_amq/$dataset -to $timeout -optimized > $output_dir/$filename-optimized-amq-opportunistic.csv
-  ./run-tests-ext $file http://$host_gcs/$dataset -to $timeout -optimized > $output_dir/$filename-optimized-gcs-opportunistic.csv
+  ./run-tests-ext $file http://$host_amq/$dataset -t $timeout --optimized > $output_dir/$filename-optimized-amq-opportunistic.csv
+  ./run-tests-ext $file http://$host_gcs/$dataset -t $timeout --optimized > $output_dir/$filename-optimized-gcs-opportunistic.csv
 }
 
 run "./stress-workloads/amq-test.sparql"

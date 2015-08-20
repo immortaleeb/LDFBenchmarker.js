@@ -9,14 +9,14 @@ var fs = require('fs'),
   args = require('minimist')(process.argv.slice(2));
 
 if (args._.length < 2 || /^--?h(elp)?$/.test(args[0])) {
-  console.log('usage: ./run-tests.js queryFile fragment [[fragment]...] [-to timeout] [-optimized]');
+  console.log('usage: ./run-tests.js queryFile fragment [[fragment]...] [-t timeout] [--optimize]');
   return process.exit(1);
 }
 
 var file = args._[0],
   startFragments = args._.slice(1),
-  timeOut = args.to || 60000, // default 60s
-  optimized = !!args.optimized,
+  timeOut = args.t || 60000, // default 60s
+  optimized = args.optimized,
   node = process.argv[0],
   clientPath = './clients/ldf-client/bin/ldf-client',
   ioSettings = {
